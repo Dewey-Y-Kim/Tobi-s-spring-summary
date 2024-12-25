@@ -27,11 +27,13 @@ JAVA 앤터프라이즈 애플리케이션 개발 프레임워크
 --
 > 단순함과 유연성
 > > ## 단순함
-> > 자바 - 객체지향언어.
-> >     단순함 모토.
-> >      But 기술이 복잡해짐으로써 특징 소실중.
+> > 자바 - 객체지향언어. 단순함 모토.
+> > 
+> > But 기술이 복잡해짐으로써 특징 소실중.
+> > 
 > > 스프링 - 객체지향의 단순함을 살리는 도구.
-> >      POPJ프로그래밍(Plain Old Java Object).
+> > 
+> > POPJ프로그래밍(Plain Old Java Object).
 >
 > > ## 유연성
 > > 확장성과 유연성.
@@ -40,7 +42,7 @@ JAVA 앤터프라이즈 애플리케이션 개발 프레임워크
 스프링의 학습과 활용의 어려움
 --
 > 이부분은 작자의 생각이 많이 들어간 듯 하므로 패스.
-
+> 
 > 목차만 작성해둠
 
 > 스프링의 핵심가치와 원리에 대한 이해   
@@ -101,6 +103,168 @@ public class User {
     }
 }
 ```
+|필드명|타임|설정|
+|--|--|--|
+|Id|varchar 10| PK|
+|Name|varchar 20| Not Null|
+|Password|varchar 20 |Not Null|
+
+#### DDL 예시
+```
+create table users(
+	id varchar(10) primary key,
+	name varchar(20) not null,
+	password varchar(20) not null
+)
+``` 
+1.1.2. UserDAO
+--
+일단은 get add만
+```
+package User.DAO;
+
+
+import User.Domain.User;
+
+import java.sql.*;
+
+public class UserDAO  {
+    public void add(User user) throws ClassNotFoundException, SQLException{
+        Class.forName("com.mysql.jdbc.Driver");
+        
+        Connection connect = DriverManager.getConnection(
+                "jdbc:mysql://localhost/DB_URL","ID","Password"
+        );
+        PreparedStatement ps = connect.prepareStatement(
+                "insert into users(id, name, password) value(?,?,?)"
+        );
+        ps.setString(1, user.getId());
+        ps.setString(2, user.getName());
+        ps.setString(3, user.getPassword());
+        
+        ps.executeQuery();
+        connect.close();
+    }
+    
+    public User get(String id) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.jdbc.Driver");
+
+        Connection connect = DriverManager.getConnection(
+                "jdbc:mysql://localhost/DB_URL", "ID", "Password"
+        );
+
+        PreparedStatement ps = connect.prepareStatement(
+                "select id, name, password from users where id = ?"
+        );
+        ps.setString(1, id);
+
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+
+        User user = new User();
+        user.setId(rs.getString("id"));
+        user.setName(rs.getString("name"));
+        user.setPassword(rs.getString("password"));
+        
+        rs.close();
+        ps.close();
+        connect.close();
+        
+        return user;
+    }
+}
+
+```
+1.1.3.DAO테스트코드
+--
+main()을 이용. 
+```
+import User.DAO.UserDAO;
+import User.Domain.User;
+
+import java.sql.SQLException;
+
+//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
+// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+public class Main {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        UserDAO dao = new UserDAO();
+
+        User user = new User();
+        user.setId("001");
+        user.setName("dewey");
+        user.setPassword("testPassword");
+        
+        dao.add(user);
+        
+        System.out.println(user.getId()+" is added");
+        
+        User user2 = dao.get(user.getId());
+        
+        System.out.println(user2.getName() + " is loaded");
+        
+        System.out.println(user2.getId() + "`s password is " + user2.getPassword());
+        
+    }
+}
+```
+Db 드라이버 넣기
+
+1.1.4. 정리
+--
+> 이 코드의 문제점
+>
+```
+Class.forName("com.mysql.jdbc.Driver");
+Connection connect = DriverManager.getConnection(
+	"jdbc:mysql://localhost/DB_URL","ID","Password");
+```
+> 중복된 코드
+> 동시사용자의 사용시 예외처리
+
+> 아는만큼 보이니 일단 현재 보이는 거 위주로 정리함
+
+1.2.DAO의 분리
+--
+1.2.1.관심사의 분리
+--
+코드는 폐기전까지 변화. 그 주기는 몇 시간~폐기.
+고로 미래를 대비한 설계 필요.
+그러기위한 수단중에 하나. 관심사의 분리
+코드 한줄 수정이 수백 수만줄 수정보다 편하다.
+
+1.2.2.커넥션 생성의 추출
+--
+> UserDAO의 관심사항
+> > * DB와 연결을 위한 커넥션.		DB종류, 드라이버, 로그인정보, 생성방법......
+> > * 사용자정보의 파라미터를 Statement에 바인딩, DB를 통해 실행.
+> > * Statement와 Connection obj의 Close. 공유리소스 아끼기.
+>
+> UserDAO의 생략사항
+> > * 예외상황처리 - 수많은 동시사용자. 공유리소스 보존
+
+> 현재의 문제 DB Connection의 분리. add(), get()에 중복되게 들어가있다.
+
+> 추출
+>
+> ```
+> public Connection getConnection(){
+> 	Class.forName("com.mysql.jdbc.Driver");
+>
+>   Connection connect = DriverManager.getConnection(
+>   	"jdbc:mysql://localhost/DB_URL","ID","Password"
+>		);
+>		return connect;
+> }
+>
+>	public void add(User user) throws ClassNotFoundException, SQLException{
+> 	Connection connect = getConnection();
+> ...
+> 
+>	public User get(String id) throws ClassNotFoundException, SQLException {
+>        Connection connect = getConnection();
+> ...
+> ```
 
 02.선택
 ===
