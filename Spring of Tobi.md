@@ -249,12 +249,12 @@ Connection connect = DriverManager.getConnection(
 >
 > ```
 > public Connection getConnection(){
-> 	Class.forName("com.mysql.jdbc.Driver");
+>   Class.forName("com.mysql.jdbc.Driver");
 >
 >   Connection connect = DriverManager.getConnection(
 >   	"jdbc:mysql://localhost/DB_URL","ID","Password"
 >		);
->		return connect;
+>	return connect;
 > }
 >
 >	public void add(User user) throws ClassNotFoundException, SQLException{
@@ -265,6 +265,45 @@ Connection connect = DriverManager.getConnection(
 >        Connection connect = getConnection();
 > ...
 > ```
+
+> 변경사항 검증
+> main() 이용 단. ID중복이므로 2회부터는 에러 발생.   이 문제의 해결은 db에서 기존 데이터를 삭제.
+
+중복된 코드를 뽑아내는 것 = 리펙토링(refactoring) : 외부 동작방식 변화 x 내부구조 변경 및 재구성. 이해 용이. 유지보수 용이 유연성 향상.
+공통 기능을 담당하는 메소드로 중복된 코드를 뽑아내는 것 = 메소드 추출(extract method)
+
+1.2.3.DB커넥션 만들기의 독립
+--
+다른 종류의 DB인 경우. 소스 코드 공개 없이 작업.
+> 상속에 의한 확장
+> 기존 DAO 수정
+> ```
+> public class UserDAO  {
+>    public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
+> ```
+> DAO를 상속받은 새로운 getConnection()
+> ```
+> public class UserDetailDAO_D extends UserDAO {
+>    @Override
+>    public Connection getConnection() throws ClassNotFoundException, SQLException {
+>        // D사용 getConnection
+> ...
+> ```
+> ```
+> public class UserDetailDAO_N extends UserDAO{
+>    @Override
+>    public Connection getConnection() throws ClassNotFoundException, SQLException {
+>        // N사용 getConnection
+> ...
+> 
+> ```
+
+템플릿 메소드 패턴(Template method pattern)
+슈퍼클래스 기본적인 메소드 흐름 작성.. 추상메소드, Protected
+서브클래스 필요에 맞게 작성.. 오버라이드
+
+팩토리 메소드 패턴(Factory method pattern)
+서브클래스에서 구체적 obj 생성방법을 결정
 
 02.선택
 ===
