@@ -287,7 +287,7 @@ Connection connect = DriverManager.getConnection(
 >    @Override
 >    public Connection getConnection() throws ClassNotFoundException, SQLException {
 >        // D사용 getConnection
-> ...
+> ```
 > ```
 > ```
 > public class UserDetailDAO_N extends UserDAO{
@@ -319,6 +319,135 @@ UserDetailDAO_D, UserDetailDAO_N은 Connection 제공 방식과 방법에만 관
 
 > #### 팩토리 메소드 패턴(Factory method pattern)
 > 서브클래스에서 구체적 obj 생성방법을 결정
+
+> #### 상속의 한계
+> if. 이미 userDAO가 다른 목적을 위해 상속을 받은 상황이라면? - 자바는 다중상속 허용 x, 또한 차후 다른 상속의 적용 힘듦
+> 
+> 상하위 클래스의 긴밀한 관계성. 서브클래스는 슈퍼클래스 기능 직접 사용 가능 = 슈퍼클래스의 변화 -> 모든 서브클래스에 발생. 슈퍼클래스의 변화 제약 필요.
+>
+> 생성된 DBConnection 기능의 타 DAO적용 불가. 매번 DBConnection 코드 중복 생성.
+
+1.3.DAO으ㅣ 확장
+--
+> 1.3.1 클래스의 분리
+> --
+> 상속을 끊고 독립적인 클래스로 생성
+> 재사용성의 증가 목적
+>
+> ### UserDAO
+> 
+> ```
+> public abstract class UserDAO  {
+>    private SimpleConnectionMaker simpleConnectionMaker;
+>    
+>    public UserDAO() {
+>        simpleConnectionMaker = new SimpleConnectionMaker();
+>    }
+> 
+>    public void add(User user) throws ClassNotFoundException, SQLException{
+>        Connection connect = simpleConnectionMaker.makeNewConnection();
+> ...
+>
+>    public User get(String id) throws ClassNotFoundException, SQLException {
+>        Connection connect = simpleConnectionMaker.makeNewConnection();
+> ...
+> 
+> ```
+
+다만 이렇게 한다면 문제 발생 - 확장성이 사라짐.
+
+1.3.2.인터페이스 도입
+--
+중간고리 생성 = interface.
+
+> ### ConnectionMaker interface
+> ```
+> public interface SimpleConnectionMaker {
+>    public Connection makeNewConnection() throws ClassNotFoundException, SQLException ;
+> }
+> ```
+> ### ConnectionMaker 구현클래스
+> ```
+> public class UserDetailDAO_D implements SimpleConnectionMaker {
+>
+>    @Override
+>    public Connection makeNewConnection() throws ClassNotFoundException, SQLException {
+>        // D사용 getConnection
+>        Class.forName("com.mysql.jdbc.Driver");
+>
+>        Connection connect = DriverManager.getConnection(
+>                "jdbc:mysql://localhost/DB_URL", "ID", "Password"
+>        );
+>        return connect;
+>    }
+> }
+> ```
+> ### UserDAO
+> ```
+> public class UserDAO  {
+>    private SimpleConnectionMaker simpleConnectionMaker;
+>
+>    public UserDAO() {
+>        simpleConnectionMaker = new UserDetailDAO_D();
+>        // how clear this class name?
+>    }
+>    public void add(User user) throws ClassNotFoundException, SQLException{
+>        Connection connect = simpleConnectionMaker.makeNewConnection();
+>        // use interface method name will not change.
+> ...
+>     public User get(String id) throws ClassNotFoundException, SQLException {
+>        Connection connect = simpleConnectionMaker.makeNewConnection();
+> ...
+> ```
+
+ConnectionMaker = new UserDetailDAO_D(); 
+
+이 코드가 문제... 초기 어떤 오브젝트를 사용할 지 결정하는 이 코드를 어떻게 처리해야하나..
+
+1.3.3.관계설정 책임의 분리
+--
+1.3.2의 문제 발생원인 - UserDAO의 관심사에 어떤 ConnectionMaker의 구현체를 사용할 지가 포함되어 있음.
+해결 방법 - 사용할 ConnectionMaker의 구현체의 관심사를 Client로 이동.
+
+### ConnectionMaker 생성자
+```
+public interface ConnectionMaker {
+    public Connection makeNewConnection() throws ClassNotFoundException, SQLException ;
+}
+...
+```
+
+### ClientTest 
+```
+public class Client {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        ConnectionMaker connectionMaker = new UserDetailDAO_D();
+
+        UserDAO dao = new UserDAO(connectionMaker);
+...
+```
+Client - 사용할 DB ConnectionMaker 를 결정 DAO를 호출
+
+UserDAO - ConnectionMaker를 받아 get add .. 의 기능 실행
+
+UserDetailDAO - DBConnection의 접속 메소드
+
+1.3.4.원칙과 패턴
+--
+> 개방 폐쇄 원칙
+> 클래스나 모듈은 확장에는 열려 있어야 하고, 변경에는 닫혀있어야 한다.
+> UserDAO는 DB연결방법, 확장에는 열려있으나, 자신의 핵심기능을 구현한 코드는 변화에 영향을 받지 않는다.
+
+> SOLID
+> S(The Single Responsiblility Principle) : 단일 책임 원칙
+> O(The Open Closed Principle) : 개방 폐쇄 원칙
+> L(The Liskov Subsititution Principle) : 리스코프 치환 원칙
+> I(The Interface Segregation Principle) : 인터페이스 분리 원칙
+> D(The Dependency Inversion Principle) : 의존관계 역전 원칙
+
+높은 응집도와 낮은 결합도
+응집도 : 하나의 모듈 클래스가 하나의 책임 관심사에만 집중
+
 
 02.선택
 ===
