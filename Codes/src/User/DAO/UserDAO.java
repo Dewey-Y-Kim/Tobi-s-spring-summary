@@ -5,15 +5,16 @@ import User.Domain.User;
 
 import java.sql.*;
 
-public class UserDAO  {
-    public Connection getConnection(){
-        Class.forName("com.mysql.jdbc.Driver");
-
-        Connection connect = DriverManager.getConnection(
-                "jdbc:mysql://localhost/DB_URL","ID","Password"
-        );
-        return connect;
-    }
+public abstract class UserDAO  {
+    public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
+//    {
+//        Class.forName("com.mysql.jdbc.Driver");
+//
+//        Connection connect = DriverManager.getConnection(
+//                "jdbc:mysql://localhost/DB_URL","ID","Password"
+//        );
+//        return connect;
+//    }
     public void add(User user) throws ClassNotFoundException, SQLException{
 //        Class.forName("com.mysql.jdbc.Driver");
 //

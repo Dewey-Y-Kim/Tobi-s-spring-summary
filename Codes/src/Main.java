@@ -1,4 +1,5 @@
 import User.DAO.UserDAO;
+import User.DAO.UserDetailDAO_N;
 import User.Domain.User;
 
 import java.sql.SQLException;
@@ -7,7 +8,7 @@ import java.sql.SQLException;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        UserDAO dao = new UserDAO();
+        UserDAO dao = new UserDetailDAO_N();
 
         User user = new User();
         user.setId("001");
