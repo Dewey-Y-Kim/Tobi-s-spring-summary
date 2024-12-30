@@ -5,23 +5,15 @@ import User.Domain.User;
 
 import java.sql.*;
 
-public abstract class UserDAO  {
-    public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
-//    {
-//        Class.forName("com.mysql.jdbc.Driver");
-//
-//        Connection connect = DriverManager.getConnection(
-//                "jdbc:mysql://localhost/DB_URL","ID","Password"
-//        );
-//        return connect;
-//    }
+public class UserDAO  {
+    private ConnectionMaker connectionMaker;
+
+    public UserDAO(ConnectionMaker connectionMaker) {
+        this.connectionMaker = connectionMaker;
+    }
     public void add(User user) throws ClassNotFoundException, SQLException{
-//        Class.forName("com.mysql.jdbc.Driver");
-//
-//        Connection connect = DriverManager.getConnection(
-//            "jdbc:mysql://localhost/DB_URL","ID","Password"
-//        );
-        Connection connect = getConnection();
+        Connection connect = connectionMaker.makeNewConnection();
+        // use interface method name will not change.
 
         PreparedStatement ps = connect.prepareStatement(
                 "insert into users(id, name, password) value(?,?,?)"
@@ -35,12 +27,7 @@ public abstract class UserDAO  {
     }
 
     public User get(String id) throws ClassNotFoundException, SQLException {
-//        Class.forName("com.mysql.jdbc.Driver");
-//
-//        Connection connect = DriverManager.getConnection(
-//                "jdbc:mysql://localhost/DB_URL", "ID", "Password"
-//        );
-        Connection connect = getConnection();
+        Connection connect = connectionMaker.makeNewConnection();
 
         PreparedStatement ps = connect.prepareStatement(
                 "select id, name, password from users where id = ?"

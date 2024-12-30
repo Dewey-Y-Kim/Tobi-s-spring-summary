@@ -4,9 +4,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class UserDetailDAO_D extends UserDAO {
+public class UserDetailDAO_D implements ConnectionMaker {
+
     @Override
-    public Connection getConnection() throws ClassNotFoundException, SQLException {
+    public Connection makeNewConnection() throws ClassNotFoundException, SQLException {
         // D사용 getConnection
         Class.forName("com.mysql.jdbc.Driver");
 

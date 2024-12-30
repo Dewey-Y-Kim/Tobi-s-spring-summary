@@ -1,14 +1,17 @@
+import User.DAO.ConnectionMaker;
 import User.DAO.UserDAO;
-import User.DAO.UserDetailDAO_N;
+import User.DAO.UserDetailDAO_D;
 import User.Domain.User;
 
 import java.sql.SQLException;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
+public class ClientTest {
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        UserDAO dao = new UserDetailDAO_N();
+        ConnectionMaker connectionMaker = new UserDetailDAO_D();
+
+        UserDAO dao = new UserDAO(connectionMaker);
 
         User user = new User();
         user.setId("001");
