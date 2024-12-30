@@ -249,12 +249,12 @@ Connection connect = DriverManager.getConnection(
 >
 > ```
 > public Connection getConnection(){
-> 	Class.forName("com.mysql.jdbc.Driver");
+>   Class.forName("com.mysql.jdbc.Driver");
 >
 >   Connection connect = DriverManager.getConnection(
 >   	"jdbc:mysql://localhost/DB_URL","ID","Password"
 >		);
->		return connect;
+>	return connect;
 > }
 >
 >	public void add(User user) throws ClassNotFoundException, SQLException{
@@ -265,6 +265,60 @@ Connection connect = DriverManager.getConnection(
 >        Connection connect = getConnection();
 > ...
 > ```
+
+> 변경사항 검증
+> main() 이용 단. ID중복이므로 2회부터는 에러 발생.   이 문제의 해결은 db에서 기존 데이터를 삭제.
+
+중복된 코드를 뽑아내는 것 = 리펙토링(refactoring) : 외부 동작방식 변화 x 내부구조 변경 및 재구성. 이해 용이. 유지보수 용이 유연성 향상.
+공통 기능을 담당하는 메소드로 중복된 코드를 뽑아내는 것 = 메소드 추출(extract method)
+
+1.2.3.DB커넥션 만들기의 독립
+--
+다른 종류의 DB인 경우. 소스 코드 공개 없이 작업.
+> 상속에 의한 확장
+> 기존 DAO 수정
+> ```
+> public class UserDAO  {
+>    public abstract Connection getConnection() throws ClassNotFoundException, SQLException;
+> ```
+> DAO를 상속받은 새로운 getConnection()
+> ```
+> public class UserDetailDAO_D extends UserDAO {
+>    @Override
+>    public Connection getConnection() throws ClassNotFoundException, SQLException {
+>        // D사용 getConnection
+> ...
+> ```
+> ```
+> public class UserDetailDAO_N extends UserDAO{
+>    @Override
+>    public Connection getConnection() throws ClassNotFoundException, SQLException {
+>        // N사용 getConnection
+> ...
+> 
+> ```
+
+UserDAO - getConnection()이 인터페이스타입이라는 점만 앎
+UserDetailDAO_D, UserDetailDAO_N은 Connection 제공 방식과 방법에만 관심.
+
+> #### 디자인 패턴
+> 
+> 자주 반복되는 특정 상황 문제 해결을 위한 재사용 가능 솔루션
+> 
+> 이름만으로 설계의도와 해결책을 함깨 설명가능.
+> 
+> 객체지향적 설계로부터 문제해결으 위해 적용할 수 있는 확장성 추구방법 - 상속, 오브젝트 합성
+> 
+> 패턴의 목적과 의도가 가장 중요
+
+> #### 템플릿 메소드 패턴(Template method pattern)
+> 상속 이용
+> 슈퍼클래스 - 기본적 메소드 흐름. 변하지 않는 기능 작성, 추가, 변경, 확장 할 기능은 추상메소드, 오버라이드 가능한 메소드로 정의.
+> 서브클래스 - 변경, 확장기능. 상속받아 작성.
+> 훅 메소드 - 슈퍼클래스에서 비워두거나 선택적으로 오버라이드 할 수 있도록 만들어둔 메소드
+
+> #### 팩토리 메소드 패턴(Factory method pattern)
+> 서브클래스에서 구체적 obj 생성방법을 결정
 
 02.선택
 ===
