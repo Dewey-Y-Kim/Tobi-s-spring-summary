@@ -1,9 +1,12 @@
-package User.DAO;
+package com.example.demo.User.DAO;
 
 
-import User.Domain.User;
+import com.example.demo.User.Domain.User;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class UserDAO  {
     private ConnectionMaker connectionMaker;
@@ -11,7 +14,7 @@ public class UserDAO  {
     public UserDAO(ConnectionMaker connectionMaker) {
         this.connectionMaker = connectionMaker;
     }
-    public void add(User user) throws ClassNotFoundException, SQLException{
+    public void add(User user) throws ClassNotFoundException, SQLException {
         Connection connect = connectionMaker.makeNewConnection();
         // use interface method name will not change.
 

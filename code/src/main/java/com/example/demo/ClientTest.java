@@ -1,18 +1,19 @@
-import User.DAO.ConnectionMaker;
-import User.DAO.UserDAO;
-import User.DAO.UserDetailDAO_D;
-import User.Domain.User;
+package com.example.demo;
+
+import com.example.demo.User.DAO.DAOFactory;
+import com.example.demo.User.DAO.UserDAO;
+import com.example.demo.User.Domain.User;
+import org.apache.catalina.core.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.sql.SQLException;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class ClientTest {
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        ConnectionMaker connectionMaker = new UserDetailDAO_D();
+//        UserDAO dao = new DAOFactory().userDAO();
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(DAOFactory.class);
 
-        UserDAO dao = new UserDAO(connectionMaker);
-
+        UserDAO dao = context.getBean("UserDAO", UserDAO.class);
         User user = new User();
         user.setId("001");
         user.setName("dewey");
