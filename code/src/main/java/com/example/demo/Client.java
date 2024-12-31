@@ -1,7 +1,8 @@
-import User.DAO.ConnectionMaker;
-import User.DAO.UserDAO;
-import User.DAO.UserDetailDAO_D;
-import User.Domain.User;
+package com.example.demo;
+
+
+import com.example.demo.User.DAO.UserDAO;
+import com.example.demo.User.Domain.User;
 
 import java.sql.SQLException;
 
@@ -9,9 +10,9 @@ import java.sql.SQLException;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Client {
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        ConnectionMaker connectionMaker = new UserDetailDAO_D();
 
-        UserDAO dao = new UserDAO(connectionMaker);
+
+        UserDAO dao = new UserDAO();
 
         User user = new User();
         user.setId("001");
