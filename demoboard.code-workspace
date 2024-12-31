@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../Git/demoboard"
+		},
+		{
+			"path": "../../Git/simpleBoard"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
+}
