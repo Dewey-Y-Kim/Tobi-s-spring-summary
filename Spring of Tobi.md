@@ -513,8 +513,116 @@ ClientTest의 관심사 : DAO테스트<기본>, ConnectionMaker의 구현클래�
 -> 분리 필요
 
 ### 팩토리
+객체 생성방법을 결정하여 만들어진 Obj 반환.     
+Obj  생성/사용의 역할/책임분리      
+* ex) DAOFactory
+    > ```
+    > public class DAOFactory {
+    > @Bean
+    > public UserDAO userDAO() throws ClassNotFoundException, SQLException{
+    >    ConnectionMaker connectionMaker = new DConnectionMaker();
+    >    UserDAO userDAO = new UserDAO(connectionMaker);
+    >    return userDAO;
+    >}
+    > ```
+### 설계도로서의 팩토리
+컴퍼넌트 - 어플리케이션의 핵심적인 데이터로직과 기술로직 담당.      
+Factory - 각 컴퍼넌트의 구조와 관계를 정의.     
 
+타인에게 공개시, 패키징된 각각의 컴퍼넌트와, Factory 소스 파일 제공.
 
+1.4.2.오브젝트 팩ㄹ토리의 활용
+---
+만약...     
+DAO가 여럿 추가된다면?      
+중복의 발생
+```
+public class DAOFactory {
+    public UserDAO userDAO() throws ClassNotFoundException, SQLException{
+        ConnectionMaker connectionMaker = new UserDetailDAO_D();
+        return new UserDAO(connectionMaker);
+    }
+
+    public UserDAO accountDAO() throws ClassNotFoundException, SQLException{
+        ConnectionMaker connectionMaker = new UserDetailDAO_D();
+        return new AccountDAO(connectionMaker);
+    }
+
+    public UserDAO messageDAO() throws ClassNotFoundException, SQLException{
+        ConnectionMaker connectionMaker = new UserDetailDAO_D();
+        return new MessageDAO(connectionMaker);
+    }
+
+    public UserDAO boardDAO() throws ClassNotFoundException, SQLException {
+        ConnectionMaker connectionMaker = new UserDetailDAO_D();
+        return new BoardDAO(connectionMaker);
+    }
+```
+ConnectionMaker connectionMaker = new UserDetailDAO_D();        
+중복 발생
+
+해결 - 분리
+```
+@Bean
+    public UserDAO userDAO() throws ClassNotFoundException, SQLException{
+        ConnectionMaker connectionMaker = new UserDetailDAO_D();
+        return new UserDAO(connectionMaker());
+    }
+
+    public UserDAO accountDAO() throws ClassNotFoundException, SQLException{
+        return new AccountDAO(connectionMaker());
+    }
+
+    public UserDAO messageDAO() throws ClassNotFoundException, SQLException{
+        return new MessageDAO(connectionMaker());
+    }
+
+    public UserDAO boardDAO() throws ClassNotFoundException, SQLException {
+        return new BoardDAO(connectionMaker());
+    }
+
+    public ConnectionMaker connectionMaker(){
+        return  new UserDetailDAO_D();
+    }
+```
+1.4.3. 제어권 이전을 통한 제어관계 역전
+--
+일반적 제어의 흐름 - 상위 클래스의  사용할 클래스 결정, 생성, 메소드 호출, 메소드에서 사용할 클래스 호출.... 반복       
+제어의 역전 ( Inversion of Control) - 모든 Obj가 능동적으로 자신이 사용할 클래스, 그 클래스의 생성시기 결정. 스스로 제어.       
+제어 권한을 다른 대상에게 위임.
+
+1.5.스프링의 IOC
+==
+1.5.1.스프링 IoC 용어정리
+--
+! 본래 순서는 1.5.3에서 나올 내용이나. 내용 정리의 입장에서는 먼저 정의를 하고 실 내용을 보여주는 게 낫다 판단 순서변경
+* bean
+    > 스프링이 IoC방식으로 관리하느 오브젝트.       
+    > Managed Object        
+    > 스프링을 사용하는 Object != bean
+    > 스프링이 직접 생성과 제어를 담당하는 오브젝트 = bean
+* bean factory
+    >  스프링의 IoC를 담당하는 핵심 컨테이너        
+    > bean 등록, 생성, 조회, 반환. + 부가적인 bean 관리.        
+    > BeanFactory라고 붙여쓰면 빈 팩토리가 구현하고 있는 가장 기본적 인터페이스 이름. getBean()과 같은 메소드 정의되어 있음.
+* application context
+    > bean factory를 확장한 IoC 컨테이너.       
+    > bean 등록 관리 + 스프링 제공하는 각종 서비스 추가제공.    
+    > 그래서 bean factory와 혼용되는 경향.      
+    > bean 생성과 제어 관점 - bean factory 라 호칭됨.
+    > application Conext - Spring이 제공하는 어플리케이션 지원 기능을 모두 포함하는 경우 호칭됨.
+    > ApplicatonContextg라고 적으면 어플리케이션 컨텍스트가 구현해야 하는 기본 인터페이스 지칭. beanFactory상속.
+* 설정정보/설정 메타정보( configuration metadata)
+    > 어플리케이션 컨텍스트/빈팩토리가 IoC적용을 위해 사용하는 메타정보. 구성정보 내지는 형상정보.      
+    > 컨테이너 기능세팅/조정 + IoC 컨테이너에 의해 관리되는 어플리케이션 오브젝트 생성/구성.        
+* 컨테이너 / IoC 컨테이너
+    > 어플리케이션 컨텍스트/빈팩토리를  bean관리 측면에서 쓰는 호칭. 
+    > 혹은 다수의 어플리케이션 컨텍스트/빈팩토리를 묶어 지칭.
+* 스프링 프레임워크
+    > IoC컨테이너, 어플리에이션 컨텍스트를 포함한 스프링이 제공하는 모든 기능을 통틀어 지칭.
+
+1.5.2. 오브젝트 팩토리를 이용한 스프링 IoC
+### 어플리케이션 컨텍스트와 설정정보
 
 02.선택
 ===========

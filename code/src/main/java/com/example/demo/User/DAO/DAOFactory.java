@@ -9,6 +9,7 @@ import java.sql.SQLException;
 public class DAOFactory {
     @Bean
     public UserDAO userDAO() throws ClassNotFoundException, SQLException{
+        ConnectionMaker connectionMaker = new UserDetailDAO_D();
         return new UserDAO(connectionMaker());
     }
     @Bean
