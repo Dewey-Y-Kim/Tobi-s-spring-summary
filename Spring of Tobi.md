@@ -611,7 +611,7 @@ ConnectionMaker connectionMaker = new UserDetailDAO_D();
     > 그래서 bean factory와 혼용되는 경향.      
     > bean 생성과 제어 관점 - bean factory 라 호칭됨.
     > application Conext - Spring이 제공하는 어플리케이션 지원 기능을 모두 포함하는 경우 호칭됨.
-    > ApplicatonContextg라고 적으면 어플리케이션 컨텍스트가 구현해야 하는 기본 인터페이스 지칭. beanFactory상속.
+    > ApplicatonContext라고 적으면 어플리케이션 컨텍스트가 구현해야 하는 기본 인터페이스 지칭. beanFactory상속.
 * 설정정보/설정 메타정보( configuration metadata)
     > 어플리케이션 컨텍스트/빈팩토리가 IoC적용을 위해 사용하는 메타정보. 구성정보 내지는 형상정보.      
     > 컨테이너 기능세팅/조정 + IoC 컨테이너에 의해 관리되는 어플리케이션 오브젝트 생성/구성.        
@@ -623,7 +623,75 @@ ConnectionMaker connectionMaker = new UserDetailDAO_D();
 
 1.5.2. 오브젝트 팩토리를 이용한 스프링 IoC
 ### 어플리케이션 컨텍스트와 설정정보
+Bean - 스프링에서 제어권을 가지고 직접 생성 관계 부여하는 Obj.      
+bean factory / ApplicatonContext -  bean 생성, 관계설정등의 제어 담당하는 IoC Obj.      
+### DAOFactory를 사용하는 어플리케이션 컨텍스트
+@configuration - Obj 설정을 담당.
+@Bean Obj 생성.
+#### DAOFactory
+```
+@Configuration
+public class DAOFactory {
+    @Bean
+    public UserDAO userDAO() throws ClassNotFoundException, SQLException{
+        ConnectionMaker connectionMaker = new UserDetailDAO_D();
+        return new UserDAO(connectionMaker());
+    }
 
+    ...
+
+    @Bean
+    public ConnectionMaker connectionMaker(){
+        return  new UserDetailDAO_D();
+    }
+}
+```
+### ClientTest
+```
+public class ClientTest {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(DAOFactory.class);
+
+        UserDAO dao = context.getBean("UserDAO", UserDAO.class);
+    ...
+```
+gettBean() - ApplicatonContext가 관리하는 Obj 요청 메소드.      
+UserDAO = ApplicatonContext에 등록된 메소드 이름.
+* 추가할 Library
+    > net.sourceforge.cglib
+    > com.springsource.org.apache.commons.logging
+    > org.springframework.asm
+    > org.springframework.beans
+    > org.springframework.context
+    > org.springframework.expression
+    >
+    > 버젼은 삭제.
+
+1.5.2.애플리케이션 컨텍스트의 동작 방식
+--      
+Application Context(= IoC컨테이너, 스프링컨테이너) -
+
+Object Factory에 대응. ApplicationContext 인터페이스 구현.        
+
+DAOFactory - DAO Obj 생성/ 관계
+
+Abstraction Conext - DAOFactory + IoC 적용 관리할 모든 Obj 생성/관계 설정.  관계 생성코드 x, 생성정보와 연관관계 정보는 설정정보를 통해 획득.       
+
+@Configuration  - IoC  설정정보. getBean()요청시 전달.
+
+@Bean  메소드의 이름을 가져와 Bean 생성. 요청시 자신의 Bean목록에서 검색 후 bean생성메소드로 obj생성/반환.
+
+* 장점       
+    * 클라이언트는 구체적 팩토리 클래스를 알 필요x -  xml사용 가능
+    * 종합 IoC 서비스 제공 - 생성, 관계 설정 + Obj 생성 방식 / 시점 전략... + 후처리, 정보조합, 설정방식 다변화, 인터셉팅, bean이 사용할 수 있는 기반기술, 외부시스템과의 연동 등 컨테이너 차원에서 제공
+    * 다양한 bean 검색방법 - getBean() 메소드, 타입/ 특별한 어노테이션 설정이 있는 bean 검색 가능.
+
+1.6. 싱글톤 레지스트리와 오브젝트 스코프
+--
+DAOFactory의 경우 매 생성시 다른 Obj반환.
+Spring Context의 경우 동일한 Obj 반환.
+
+1.6.1. 싱글톤 레지스트리로서의 어플리케이션 컨텍스트
 02.선택
 ===========
 
