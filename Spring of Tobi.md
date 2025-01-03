@@ -692,6 +692,39 @@ DAOFactory의 경우 매 생성시 다른 Obj반환.
 Spring Context의 경우 동일한 Obj 반환.
 
 1.6.1. 싱글톤 레지스트리로서의 어플리케이션 컨텍스트
+--
+bean 을 singleton으로 생성하는 이유 - 스프링 = 태생적으로 서버환경.            
+다수의 요청에 대한 응답으로써 많은 Obj 생성 = 메모리  소모 과다, GC의 활성화 과다 = 성능저하.       
+* 싱글톤(Sington Pattern)
+    * 어플리케이션 내에서 제한된 인스턴스 개수,혹은 하나만 존재.
+    * 어플리케이션 내에서 여러곳에 공유하는 곳에 주로 사용.
+    * 단점이 많아 비판되므로 최소한 사용이 필요.
+
+### 싱글톤의 한계
+* 싱글톤 생성방법
+    > 클래스 밖에서 오브젝트를 생성하지 못하도록 생성자 private 사용. 
+    > static 필드 정의
+    > getInstance() 사용
+
+* 싱글톤 패턴을 이용한 UserDAO
+    ```
+    public class UserDAO  {
+        private static UserDAO INSTANCE;
+     
+        ...
+     
+        public static synchronized UserDAO getInstance(){
+        if( INSTANCE == null) {
+            INSTANCE = new UserDAO(???);
+        }
+        return INSTANCE;
+    }
+
+    ```
+
+
+
+
 02.선택
 ===========
 

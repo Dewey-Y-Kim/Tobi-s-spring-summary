@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserDAO  {
+    private static UserDAO INSTANCE;
+
     private ConnectionMaker connectionMaker;
 
     public UserDAO(ConnectionMaker connectionMaker) {
@@ -51,4 +53,12 @@ public class UserDAO  {
 
         return user;
     }
+
+    public static synchronized UserDAO getInstance(){
+        if( INSTANCE == null) {
+            INSTANCE = new UserDAO(???);
+        }
+        return INSTANCE;
+    }
+
 }
