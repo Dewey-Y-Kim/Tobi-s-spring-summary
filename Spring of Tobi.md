@@ -739,9 +739,36 @@ bean 을 singleton으로 생성하는 이유 - 스프링 = 태생적으로 서�
 싱글톤 - 멀티쓰레드 환경 -> 여러 스레드가 동시 접속/사용 가능. 상태관리에 주의 필요.        
 stateless 방식 사용 - 저장 공간 = 하나. 덮어써짐. 예상과 다른 결과 출력.
 각 요청에 대한 정보/DB나 리소스로부터 생성한 정보 -> 메소드파라메터, 메소드내 로컬변수 => 다른 값 처리가능.
-```
+* 인스턴스 변수를 사용하도록 수정한 UserDAO
+    ```
+     public class UserDAO  {
+        private static UserDAO INSTANCE;
 
-```
+        private ConnectionMaker connectionMaker;
+        private User user;
+        private Connection connect;
+        
+        ...
+
+        public User get(String id) throws ClassNotFoundException, SQLException {
+            this.connect = connectionMaker.makeNewConnection();
+            
+            ...
+
+            this.user = new User();
+            this.user.setId(rs.getString("id"));
+            this.user.setName(rs.getString("name"));
+            this.user.setPassword(rs.getString("password"));
+
+            ...
+
+            return this.user;
+        }
+    }
+    ```
+로컬 변수를 인스턴스 필드로 선언. = 싱글톤 사용시 문제 발생.
+싱글톤 ㅊbean으로 사용되는 클래스는 로컬 변수로 정의 또는 파라미터를 이용해 사용
+
 02.선택
 ===========
 

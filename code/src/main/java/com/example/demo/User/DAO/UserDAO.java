@@ -12,12 +12,13 @@ public class UserDAO  {
     private static UserDAO INSTANCE;
 
     private ConnectionMaker connectionMaker;
-
+    private User user;
+    private Connection connect;
     public UserDAO(ConnectionMaker connectionMaker) {
         this.connectionMaker = connectionMaker;
     }
     public void add(User user) throws ClassNotFoundException, SQLException {
-        Connection connect = connectionMaker.makeNewConnection();
+        this.connect = connectionMaker.makeNewConnection();
         // use interface method name will not change.
 
         PreparedStatement ps = connect.prepareStatement(
@@ -32,7 +33,7 @@ public class UserDAO  {
     }
 
     public User get(String id) throws ClassNotFoundException, SQLException {
-        Connection connect = connectionMaker.makeNewConnection();
+        this.connect = connectionMaker.makeNewConnection();
 
         PreparedStatement ps = connect.prepareStatement(
                 "select id, name, password from users where id = ?"
@@ -42,10 +43,10 @@ public class UserDAO  {
         ResultSet rs = ps.executeQuery();
         rs.next();
 
-        User user = new User();
-        user.setId(rs.getString("id"));
-        user.setName(rs.getString("name"));
-        user.setPassword(rs.getString("password"));
+        this.user = new User();
+        this.user.setId(rs.getString("id"));
+        this.user.setName(rs.getString("name"));
+        this.user.setPassword(rs.getString("password"));
 
         rs.close();
         ps.close();
@@ -56,7 +57,8 @@ public class UserDAO  {
 
     public static synchronized UserDAO getInstance(){
         if( INSTANCE == null) {
-            INSTANCE = new UserDAO(???);
+
+            INSTANCE = new UserDAO(new UserDetailDAO_D());
         }
         return INSTANCE;
     }
